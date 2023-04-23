@@ -9,16 +9,33 @@ import re
 import numpy as np
 
 
+supported_models = [
+    "sentence-transformers/LaBSE",
+    "bert-base-uncased",
+    "roberta-base",
+    "sentence-transformers/all-MiniLM-L6-v2",
+    "use",
+]
+
+
 class Keywords:
-    def __init__(self, bert_model: AutoModel, tokenizer: AutoTokenizer):
-        embedding_model = tensorflow_hub.load(
-            "https://tfhub.dev/google/universal-sentence-encoder/4"
-        )
-        # self.kw_model = KeyBERT(model=embedding_model)
-        # self.kw_model = KeyBERT(model="sentence-transformers/LaBSE")
-        self.kw_model = KeyBERT(model="bert-base-uncased")
-        # self.kw_model = KeyBERT(model="roberta-base")
-        # self.kw_model = KeyBERT(model="sentence-transformers/all-MiniLM-L6-v2")
+    def __init__(
+        self,
+        bert_model: AutoModel,
+        tokenizer: AutoTokenizer,
+        model_string="bert-base-uncased",
+    ):
+        if model_string == "use":
+            embedding_model = tensorflow_hub.load(
+                "https://tfhub.dev/google/universal-sentence-encoder/4"
+            )
+            self.kw_model = KeyBERT(model=embedding_model)
+
+        self.model_string = model_string
+        if model_string not in supported_models:
+            self.model_string = "bert-base-uncased"
+
+        self.kw_model = KeyBERT(model=self.model_string)
         self.bert_model = bert_model
         self.tokenizer = tokenizer
 
