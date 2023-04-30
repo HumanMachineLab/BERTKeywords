@@ -75,6 +75,26 @@ class Keywords:
     ex: [('continual', 0.6023), ('change', 0.4642), ('life', 0.4436), ('essence', 0.3975)]
     """
 
+    def get_random_keywords_with_embeddings(
+        self, data: str
+    ) -> List[Tuple[str, float, torch.Tensor]]:
+        keywords = self.kw_model.extract_keywords(data, keyphrase_ngram_range=(1, 1))
+
+        keywords_with_embeddings = []
+        for kw in keywords:
+            # # only add the word if it's not numeric
+            # if not kw[0].isnumeric():
+            embedding = self.get_word_embedding(data, kw[0])
+            # can't find the word, proceeed without it.
+            if embedding is not False:
+                keywords_with_embeddings.append((kw[0], kw[1], embedding))
+
+        return keywords_with_embeddings
+
+    """uses keybert to generate keywords from a sentence. Gets word embeddings from BERT.
+    ex: [('continual', 0.6023), ('change', 0.4642), ('life', 0.4436), ('essence', 0.3975)]
+    """
+
     def get_keywords_with_embeddings(
         self, data: str
     ) -> List[Tuple[str, float, torch.Tensor]]:
@@ -92,6 +112,43 @@ class Keywords:
         # sort by descending to have the most important words first
         desc_sorted_words = sorted(keywords_with_embeddings, key=lambda x: x[1])[::-1]
         return desc_sorted_words
+
+    """uses keybert to generate keywords from a sentence, returns keybert based word embeddings
+    ex: [('continual', 0.6023), ('change', 0.4642), ('life', 0.4436), ('essence', 0.3975)]
+    """
+
+    def get_random_keywords_with_kb_embeddings(
+        self, data: str
+    ) -> List[Tuple[str, float, torch.Tensor]]:
+        doc_embeddings, word_embeddings = self.kw_model.extract_embeddings(
+            data, keyphrase_ngram_range=(1, 1)
+        )
+
+        keywords = self.kw_model.extract_keywords(
+            data,
+            doc_embeddings=doc_embeddings,
+            word_embeddings=word_embeddings,
+            keyphrase_ngram_range=(1, 1),
+        )
+
+        keywords_with_embeddings = []
+
+        # # NON NUMERIC ADDITIONS
+        # for kw, we in zip(keywords, word_embeddings):
+        #     # all the keywords are numbers, just return them and move on.
+        #     if len([kw[0].isnumeric() for kw in keywords_with_embeddings]) == len(
+        #         keywords_with_embeddings
+        #     ):
+        #         keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
+        #     else:
+        #         # only add the word if it's not numeric
+        #         if not kw[0].isnumeric():
+        #             keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
+
+        for kw, we in zip(keywords, word_embeddings):
+            keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
+
+        return keywords_with_embeddings
 
     """uses keybert to generate keywords from a sentence, returns keybert based word embeddings
     ex: [('continual', 0.6023), ('change', 0.4642), ('life', 0.4436), ('essence', 0.3975)]
