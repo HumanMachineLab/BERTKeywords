@@ -1,4 +1,4 @@
-from keybert import KeyBERT
+
 from transformers import AutoTokenizer, AutoModel
 from typing import List, Tuple
 from functools import cached_property
@@ -7,6 +7,8 @@ import torch
 import tensorflow_hub
 import re
 import numpy as np
+
+from .keybert import KeyBERT # import local copy of keybert
 
 
 supported_models = [
@@ -120,18 +122,11 @@ class Keywords:
     def get_random_keywords_with_kb_embeddings(
         self, data: str
     ) -> List[Tuple[str, float, torch.Tensor]]:
-        doc_embeddings, word_embeddings = self.kw_model.extract_embeddings(
-            data, keyphrase_ngram_range=(1, 1)
-        )
 
-        keywords = self.kw_model.extract_keywords(
+        keywords_with_embeddings = self.kw_model.extract_keywords(
             data,
-            doc_embeddings=doc_embeddings,
-            word_embeddings=word_embeddings,
             keyphrase_ngram_range=(1, 1),
         )
-
-        keywords_with_embeddings = []
 
         # # NON NUMERIC ADDITIONS
         # for kw, we in zip(keywords, word_embeddings):
@@ -144,9 +139,6 @@ class Keywords:
         #         # only add the word if it's not numeric
         #         if not kw[0].isnumeric():
         #             keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
-
-        for kw, we in zip(keywords, word_embeddings):
-            keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
 
         return keywords_with_embeddings
 
@@ -157,18 +149,11 @@ class Keywords:
     def get_keywords_with_kb_embeddings(
         self, data: str
     ) -> List[Tuple[str, float, torch.Tensor]]:
-        doc_embeddings, word_embeddings = self.kw_model.extract_embeddings(
-            data, keyphrase_ngram_range=(1, 1)
-        )
 
-        keywords = self.kw_model.extract_keywords(
+        keywords_with_embeddings = self.kw_model.extract_keywords(
             data,
-            doc_embeddings=doc_embeddings,
-            word_embeddings=word_embeddings,
             keyphrase_ngram_range=(1, 1),
         )
-
-        keywords_with_embeddings = []
 
         # # NON NUMERIC ADDITIONS
         # for kw, we in zip(keywords, word_embeddings):
@@ -181,9 +166,6 @@ class Keywords:
         #         # only add the word if it's not numeric
         #         if not kw[0].isnumeric():
         #             keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
-
-        for kw, we in zip(keywords, word_embeddings):
-            keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
 
         # sort by descending to have the most important words first
         desc_sorted_words = sorted(keywords_with_embeddings, key=lambda x: x[1])[::-1]
