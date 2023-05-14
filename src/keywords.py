@@ -94,6 +94,30 @@ class Keywords:
         desc_sorted_words = sorted(keywords_with_embeddings, key=lambda x: x[1])[::-1]
         return desc_sorted_words
 
+    def get_batch_keywords_with_embeddings(
+        self, data: List[str]
+    ) -> List[Tuple[str, float, torch.Tensor]]:
+        keywords = self.kw_model.extract_keywords(data, keyphrase_ngram_range=(1, 1))
+
+        batch_sentences = []
+
+        for sentence in keywords:
+            keywords_with_embeddings = []
+            for kw in sentence:
+                # # only add the word if it's not numeric
+                # if not kw[0].isnumeric():
+                embedding = self.get_word_embedding(data, kw[0])
+                # can't find the word, proceeed without it.
+                if embedding is not False:
+                    keywords_with_embeddings.append((kw[0], kw[1], embedding))
+            # sort by descending to have the most important words first
+            desc_sorted_words = sorted(keywords_with_embeddings, key=lambda x: x[1])[
+                ::-1
+            ]
+            batch_sentences.append(desc_sorted_words)
+
+        return batch_sentences
+
     """uses keybert to generate keywords from a sentence, returns keybert based word embeddings
     ex: [('continual', 0.6023), ('change', 0.4642), ('life', 0.4436), ('essence', 0.3975)]
     """
@@ -122,6 +146,36 @@ class Keywords:
         # sort by descending to have the most important words first
         desc_sorted_words = sorted(keywords_with_embeddings, key=lambda x: x[1])[::-1]
         return desc_sorted_words
+
+    def get_batch_keywords_with_kb_embeddings(
+        self, data: str
+    ) -> List[Tuple[str, float, torch.Tensor]]:
+
+        keywords_with_embeddings = self.kw_model.extract_keywords(
+            data,
+            keyphrase_ngram_range=(1, 1),
+        )
+
+        batch_sentences = []
+
+        # # NON NUMERIC ADDITIONS
+        # for kw, we in zip(keywords, word_embeddings):
+        #     # all the keywords are numbers, just return them and move on.
+        #     if len([kw[0].isnumeric() for kw in keywords_with_embeddings]) == len(
+        #         keywords_with_embeddings
+        #     ):
+        #         keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
+        #     else:
+        #         # only add the word if it's not numeric
+        #         if not kw[0].isnumeric():
+        #             keywords_with_embeddings.append((kw[0], kw[1], torch.tensor(we)))
+
+        for sentences in keywords_with_embeddings:
+            # sort by descending to have the most important words first
+            desc_sorted_words = sorted(sentences, key=lambda x: x[1])[::-1]
+            batch_sentences.append(desc_sorted_words)
+
+        return batch_sentences
 
     def get_keywords(
         self, data: str, emb: bool = True
