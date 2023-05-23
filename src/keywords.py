@@ -95,9 +95,18 @@ class Keywords:
         return desc_sorted_words
 
     def get_batch_keywords_with_embeddings(
-        self, data: List[str]
+        self,
+        data: List[str],
+        diversity=0,
     ) -> List[Tuple[str, float, torch.Tensor]]:
-        keywords = self.kw_model.extract_keywords(data, keyphrase_ngram_range=(1, 1))
+        if diversity == 0:
+            keywords = self.kw_model.extract_keywords(
+                data, keyphrase_ngram_range=(1, 1)
+            )
+        else:
+            keywords = self.kw_model.extract_keywords(
+                data, keyphrase_ngram_range=(1, 1), use_mmr=True, diversity=diversity
+            )
 
         batch_sentences = []
 
@@ -148,13 +157,18 @@ class Keywords:
         return desc_sorted_words
 
     def get_batch_keywords_with_kb_embeddings(
-        self, data: str
+        self,
+        data: str,
+        diversity: float = 0.0,
     ) -> List[Tuple[str, float, torch.Tensor]]:
-
-        keywords_with_embeddings = self.kw_model.extract_keywords(
-            data,
-            keyphrase_ngram_range=(1, 1),
-        )
+        if diversity == 0.0:
+            keywords_with_embeddings = self.kw_model.extract_keywords(
+                data, keyphrase_ngram_range=(1, 1)
+            )
+        else:
+            keywords_with_embeddings = self.kw_model.extract_keywords(
+                data, keyphrase_ngram_range=(1, 1), use_mmr=True, diversity=diversity
+            )
 
         batch_sentences = []
 
