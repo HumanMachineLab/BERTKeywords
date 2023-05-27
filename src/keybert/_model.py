@@ -214,7 +214,6 @@ class KeyBERT:
                         top_n,
                         diversity,
                     )
-                    print("keywords", keywords)
 
                 # Max Sum Distance
                 elif use_maxsum:
