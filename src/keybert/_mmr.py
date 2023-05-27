@@ -62,7 +62,7 @@ def mmr(
 
     # Extract and sort keywords in descending similarity
     keywords = [
-        (words[idx], round(float(word_doc_similarity.reshape(1, -1)[0][idx]), 4))
+        (words[idx], round(float(word_doc_similarity.reshape(1, -1)[0][idx]), 4), word_embeddings[idx])
         for idx in keywords_idx
     ]
     keywords = sorted(keywords, key=itemgetter(1), reverse=True)

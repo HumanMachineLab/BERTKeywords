@@ -170,6 +170,7 @@ class Keywords:
                 data, keyphrase_ngram_range=(1, 1), use_mmr=True, diversity=diversity
             )
 
+        print(keywords_with_embeddings)
         batch_sentences = []
 
         # # NON NUMERIC ADDITIONS

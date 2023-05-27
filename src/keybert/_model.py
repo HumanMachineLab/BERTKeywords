@@ -10,10 +10,10 @@ from sklearn import __version__ as sklearn_version
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
-from keybert._mmr import mmr
-from keybert._maxsum import max_sum_distance
-from keybert._highlight import highlight_document
-from keybert.backend._utils import select_backend
+from ._mmr import mmr
+from ._maxsum import max_sum_distance
+from ._highlight import highlight_document
+from .backend._utils import select_backend
 
 
 class KeyBERT:
@@ -214,6 +214,7 @@ class KeyBERT:
                         top_n,
                         diversity,
                     )
+                    print("keywords", keywords)
 
                 # Max Sum Distance
                 elif use_maxsum:
