@@ -97,15 +97,25 @@ class Keywords:
     def get_batch_keywords_with_embeddings(
         self,
         data: List[str],
-        diversity=0,
+        diversity: float = 0.0,
+        diverse_keywords: bool = False,  # whether to pull diverse keywords with mmr
+        similar_keywords: bool = True,  # whether to pull similar keywords without mmr
     ) -> List[Tuple[str, float, torch.Tensor]]:
-        if diversity == 0:
-            keywords = self.kw_model.extract_keywords(
-                data, keyphrase_ngram_range=(1, 1)
+        keywords = []
+
+        # this will allow us to get both similar and diverse keywords in the same set of keywords.
+        if diverse_keywords:
+            keywords.extend(
+                self.kw_model.extract_keywords(
+                    data,
+                    keyphrase_ngram_range=(1, 1),
+                    use_mmr=True,
+                    diversity=diversity,
+                )
             )
-        else:
-            keywords = self.kw_model.extract_keywords(
-                data, keyphrase_ngram_range=(1, 1), use_mmr=True, diversity=diversity
+        if similar_keywords:
+            keywords.extend(
+                self.kw_model.extract_keywords(data, keyphrase_ngram_range=(1, 1))
             )
 
         batch_sentences = []
@@ -160,15 +170,33 @@ class Keywords:
         self,
         data: str,
         diversity: float = 0.0,
+        diverse_keywords: bool = False,  # whether to pull diverse keywords with mmr
+        similar_keywords: bool = True,  # whether to pull similar keywords without mmr
     ) -> List[Tuple[str, float, torch.Tensor]]:
-        if diversity == 0.0:
-            keywords_with_embeddings = self.kw_model.extract_keywords(
+
+        keywords_with_embeddings = []
+
+        # this will allow us to get both similar and diverse keywords in the same set of keywords.
+        if diverse_keywords:
+            diverse_batch_keywords = self.kw_model.extract_keywords(
+                data,
+                keyphrase_ngram_range=(1, 1),
+                use_mmr=True,
+                diversity=diversity,
+            )
+            keywords_with_embeddings.append(diverse_batch_keywords)
+        if similar_keywords:
+            similar_batch_keywords = self.kw_model.extract_keywords(
                 data, keyphrase_ngram_range=(1, 1)
             )
-        else:
-            keywords_with_embeddings = self.kw_model.extract_keywords(
-                data, keyphrase_ngram_range=(1, 1), use_mmr=True, diversity=diversity
-            )
+            keywords_with_embeddings.append(similar_batch_keywords)
+
+        # we need to combine these two lists vertically so that the keywords
+        # for both diverse and similar are in the same stack for the same sentences
+        if diverse_keywords and similar_keywords:
+            keywords_with_embeddings = []
+            for x, y in zip(diverse_batch_keywords, similar_batch_keywords):
+                keywords_with_embeddings.append([*x, *y])
 
         batch_sentences = []
 
