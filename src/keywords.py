@@ -184,12 +184,12 @@ class Keywords:
                 use_mmr=True,
                 diversity=diversity,
             )
-            keywords_with_embeddings.append(diverse_batch_keywords)
+            keywords_with_embeddings.extend(diverse_batch_keywords)
         if similar_keywords:
             similar_batch_keywords = self.kw_model.extract_keywords(
                 data, keyphrase_ngram_range=(1, 1)
             )
-            keywords_with_embeddings.append(similar_batch_keywords)
+            keywords_with_embeddings.extend(similar_batch_keywords)
 
         # we need to combine these two lists vertically so that the keywords
         # for both diverse and similar are in the same stack for the same sentences
