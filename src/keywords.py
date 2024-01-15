@@ -19,6 +19,15 @@ supported_models = [
 ]
 
 
+class Keyword:
+    def __init__(self, text: str, importance: float, embedding: list[float]):
+        self.text = text
+        self.importance = importance
+        self.embedding = embedding
+
+    def __str__(self):
+        return f'{self.text}'
+
 class Keywords:
     def __init__(
         self,
