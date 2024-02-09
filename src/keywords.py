@@ -6,6 +6,7 @@ import torch
 import tensorflow_hub
 import re
 import numpy as np
+from typing import List
 
 from .keybert import KeyBERT  # import local copy of keybert
 
@@ -20,13 +21,17 @@ supported_models = [
 
 
 class Keyword:
-    def __init__(self, text: str, importance: float, embedding: list[float]):
+    def __init__(self, text: str, importance: float, embedding: List[float]):
         self.text = text
         self.importance = importance
         self.embedding = embedding
+        self.np_embedding = np.array(embedding)
 
     def __str__(self):
         return f'{self.text}'
+    
+    def __repr__(self):
+        return f'Keyword(\'{self.text}\' | Imp: {self.importance} | Emb Shape: {self.np_embedding.shape}'
 
 class Keywords:
     def __init__(
@@ -203,9 +208,12 @@ class Keywords:
         # we need to combine these two lists vertically so that the keywords
         # for both diverse and similar are in the same stack for the same sentences
         if diverse_keywords and similar_keywords:
-            keywords_with_embeddings = []
-            for x, y in zip(diverse_batch_keywords, similar_batch_keywords):
-                keywords_with_embeddings.append([*x, *y])
+            keywords_with_embeddings = diverse_batch_keywords
+            # don't add duplicate words
+            for sentence, sentence_similar in zip(keywords_with_embeddings, similar_batch_keywords):
+                for kw in sentence_similar:
+                    if kw[0] not in [k[0] for k in sentence]:
+                        sentence.append(kw)
 
         batch_sentences = []
 
