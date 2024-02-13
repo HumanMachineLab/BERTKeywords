@@ -183,6 +183,7 @@ class Keywords:
     def get_batch_keywords_with_kb_embeddings(
         self,
         data: str,
+        include_numeric_keywords :bool = True, 
         diversity: float = 0.0,
         diverse_keywords: bool = False,  # whether to pull diverse keywords with mmr
         similar_keywords: bool = True,  # whether to pull similar keywords without mmr
@@ -214,6 +215,17 @@ class Keywords:
                 for kw in sentence_similar:
                     if kw[0] not in [k[0] for k in sentence]:
                         sentence.append(kw)
+
+        # remove numeric keywords if desired.
+        if not include_numeric_keywords:
+            new_keywords_with_embeddings = []
+            for sentence in keywords_with_embeddings:
+                new_sentence = []
+                for kw in sentence:
+                    if not kw[0].isnumeric():
+                        new_sentence.append(kw)
+                new_keywords_with_embeddings.append(new_sentence)
+            keywords_with_embeddings = new_keywords_with_embeddings
 
         batch_sentences = []
 
