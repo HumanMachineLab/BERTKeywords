@@ -215,6 +215,7 @@ class Keywords:
             for sentence, sentence_similar in zip(keywords_with_embeddings, similar_batch_keywords):
                 for kw in sentence_similar:
                     if kw[0] not in [k[0] for k in sentence]:
+                        # print("keyword: ", kw[0])
                         sentence.append(kw)
 
         # remove numeric keywords if desired.
